@@ -18,7 +18,7 @@ class RegisterController extends Controller
         $user = User::create($request->validated());
 
         return [
-            'token' => $user->createToken('Login')->plainTextToken,
+            'token' => $user->createToken('Register')->plainTextToken,
         ];
     }
 }
