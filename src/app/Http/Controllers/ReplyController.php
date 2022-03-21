@@ -7,6 +7,7 @@ use App\Http\Resources\ReplyResource;
 use App\Models\Reply;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ReplyController extends Controller
 {
@@ -24,6 +25,8 @@ class ReplyController extends Controller
             ])
         );
 
+        Cache::forget('replies_of_' . $reply->message_id);
+
         return [
             'reply_id' => $reply->id,
         ];
@@ -37,7 +40,12 @@ class ReplyController extends Controller
      */
     public function list(Request $request)
     {   
-        $replies = Reply::where('message_id', $request->input('message_id'))->get();
+        $messageId = $request->input('message_id');
+        
+        $replies = Cache::rememberForever(
+            'replies_of_' . $messageId, function () use ($messageId) {
+            return Reply::where('message_id', $messageId)->get();
+        });
 
         return [
             'replies' => ReplyResource::collection($replies),
@@ -63,6 +71,9 @@ class ReplyController extends Controller
             abort(404, 'Message reply not found');
         }
 
+
+        Cache::forget('replies_of_' . $messageId);
+
         return [
             'reply_updated' => $reply,
         ];
@@ -76,13 +87,17 @@ class ReplyController extends Controller
      */
     public function archive(Request $request, int $replyId)
     {
-        $reply = Reply::where('message_id', $request->input('message_id'))
+        $messageId = $request->input('message_id');
+
+        $reply = Reply::where('message_id', $messageId)
             ->where('id', $replyId)
             ->delete();
         
         if ( ! $reply) {
             abort(404, 'Message reply not found');
         }
+
+        Cache::forget('replies_of_' . $messageId);
 
         return [
             'reply_deleted' => $reply,

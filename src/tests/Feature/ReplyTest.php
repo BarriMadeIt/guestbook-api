@@ -6,6 +6,7 @@ use App\Models\Message;
 use App\Models\Reply;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -251,5 +252,25 @@ class ReplyTest extends TestCase
         ])->assertOk();
 
         $this->assertSoftDeleted($reply);
+    }
+
+    public function testRepliesAreCached()
+    {
+        Reply::factory(4)->create([
+            'message_id' => $this->message->id,
+        ]);
+
+        $this->json('GET', '/api/replies/list', [
+            'message_id' => $this->message->id,
+        ])->assertOk();
+        
+        $this->assertTrue(Cache::has('replies_of_' . $this->message->id));
+
+        $this->postJson('/api/replies/add', [
+            'message_id' => $this->message->id,
+            'reply' => 'Test reply',
+        ])->assertOk();
+        
+        $this->assertTrue(Cache::missing('replies_of_' . $this->message->id));
     }
 }
