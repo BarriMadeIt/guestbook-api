@@ -3,6 +3,7 @@
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ReplyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,5 +29,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/show/{id}', [MessageController::class, 'show']);
         Route::put('/update/{id}', [MessageController::class, 'update']);
         Route::delete('/archive/{id}', [MessageController::class, 'archive']);
+    });
+
+    Route::middleware('message.required')->group(function () {
+        Route::prefix('replies')->group(function () {
+            Route::post('/add', [ReplyController::class, 'store']);
+            Route::get('/list', [ReplyController::class, 'list']);
+            Route::put('/update/{replyId}', [ReplyController::class, 'update']);
+            Route::delete('/archive/{replyId}', [ReplyController::class, 'archive']);
+        });
     });
 });
