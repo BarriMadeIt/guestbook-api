@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('messages')->group(function () {
         Route::post('/add', [MessageController::class, 'store']);
         Route::get('/list', [MessageController::class, 'list']);
+        Route::get('/list-all', [MessageController::class, 'listAll'])->middleware('admin');
         Route::get('/show/{id}', [MessageController::class, 'show']);
         Route::put('/update/{id}', [MessageController::class, 'update']);
         Route::delete('/archive/{id}', [MessageController::class, 'archive']);

@@ -29,11 +29,25 @@ class MessageController extends Controller
     }
 
     /**
-     * List messages
+     * List a user's messages
      *
      * @return array
      */
     public function list()
+    {
+        $messages = Message::where('user_id', Auth::id())->get();
+
+        return [
+            'messages' => MessageResource::collection($messages),
+        ];
+    }
+
+    /**
+     * List all messages
+     *
+     * @return array
+     */
+    public function listAll()
     {
         $messages = Message::all();
 
