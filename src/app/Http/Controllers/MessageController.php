@@ -107,9 +107,16 @@ class MessageController extends Controller
      */
     public function archive($id)
     {
-        $message = Message::where('id', $id)
+        $message = null;
+
+        if (Auth::user()->is_admin) {
+            $message = Message::where('id', $id)
+            ->delete();
+        } else {
+            $message = Message::where('id', $id)
             ->where('user_id', Auth::id())
             ->delete();
+        }
         
         if ( ! $message) {
             abort(404, 'Message not found');
