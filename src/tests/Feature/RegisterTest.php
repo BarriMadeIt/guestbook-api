@@ -27,7 +27,8 @@ class RegisterTest extends TestCase
             'email' => 'test@test.com',
             'password' => '123456',
             'password_confirmation' => '123456',
-        ])->assertOk();
+        ])->assertOk()
+            ->assertJsonStructure(['token']);
 
         $this->assertDatabaseHas('users', [
             'email' => 'test@test.com',
