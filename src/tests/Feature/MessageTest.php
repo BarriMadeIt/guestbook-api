@@ -154,6 +154,24 @@ class MessageTest extends TestCase
         $this->assertSoftDeleted($message);
     }
 
+    public function testAdminCanArchiveMessage()
+    {
+        $message = Message::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        $admin = User::factory()->create([
+            'is_admin' => true,
+        ]);
+
+        Sanctum::actingAs($admin, ['*']);
+        
+        $this->delete('/api/messages/archive/' . $message->id)
+            ->assertOk();
+        
+        $this->assertSoftDeleted($message);
+    }
+
     public function testOtherUserCannotArchiveAMessage()
     {
         $message = Message::factory()->create();
