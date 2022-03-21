@@ -1,0 +1,70 @@
+version: '3.8'
+
+networks:
+  guestbook-net:
+
+services:
+  guestbook-db:
+    image: 'bitnami/mariadb:latest'
+    container_name: guestbook-db
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_USER=guestbook
+      - MARIADB_PASSWORD=secret
+      - MARIADB_DATABASE=guestbook
+    volumes:
+        - './mariadb:/bitnami/mariadb'
+    networks:
+      - guestbook-net
+    ports:
+      - 3306:3306
+      
+  guestbook-api:
+    image: docker.io/bitnami/laravel:8
+    container_name: guestbook-api
+    user: bitnami
+    ports:
+      - '8000:8000'
+    environment:
+      - DB_HOST=guestbook-db
+      - DB_PORT=3306
+      - DB_USERNAME=guestbook
+      - DB_PASSWORD=secret
+      - DB_DATABASE=guestbook
+    volumes:
+      - './src:/app'
+    depends_on:
+      - guestbook-db
+    networks:
+      - guestbook-net
+
+  # guestbook-frontend:
+  #   build:
+  #     context: ./node
+  #     dockerfile: node.Dockerfile
+  #   container_name: guestbook-frontend
+  #   ports:
+  #     - '8080:80'
+  #   volumes:
+  #     - './src:/app'
+  #   depends_on:
+  #     - guestbook-db
+  #     - guestbook-api
+  #   networks:
+  #     - guestbook-net
+    
+  # npm:
+  #   build:
+  #     context: ./node
+  #     dockerfile: npm.Dockerfile
+  #   container_name: npm
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - './node/src:/app'
+  #   depends_on:
+  #     - guestbook-db
+  #     - guestbook-api
+  #   networks:
+  #     - guestbook-net
